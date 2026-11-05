@@ -1,0 +1,48 @@
+fullnameOverride: "art"
+
+application:
+  reloader: true
+  probes:
+    readinessProbe:
+      httpGet:
+        path: /index.html
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 15
+    livenessProbe:
+      httpGet:
+        path: /index.html
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 15
+      timeoutSeconds: 5
+  resources:
+    limits:
+      cpu: "0.2"
+      memory: "400Mi"
+    requests:
+      cpu: "0.1"
+      memory: "200Mi"
+  mountPathHtml: /usr/local/openresty/nginx/html/
+  mountPathConfig: /etc/nginx/conf.d/
+
+service:
+  # Services type ClusterIP and NodePort
+  type: NodePort
+  namePort: "proxy"
+  nodePort: 31002
+
+ingress:
+  enabled: true
+  className: "system-ingress"
+  annotations:
+    certmanager.k8s.io/cluster-issuer: monitoring-issuer
+  hosts:
+    - host: "application.damir.local"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - application
+      secretName: art-tls
